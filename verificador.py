@@ -50,7 +50,6 @@ def obtener_clave_publica_desde_did(did):
 
     multicodec = base58_decode(encoded)
 
-    # Ed25519 public key multicodec = 0xed01
     if not multicodec.startswith(b"\xed\x01"):
         raise ValueError(
             "El DID no contiene una clave pública Ed25519"
@@ -68,19 +67,20 @@ def obtener_clave_publica_desde_did(did):
 
 def cargar_proof():
     if not PROOF_FILE.exists():
-        raise FileNotFoundError(
-            "No existe proof.json"
-        )
+        raise FileNotFoundError("No existe proof.json")
 
     with open(PROOF_FILE, "r", encoding="utf-8") as archivo:
         return json.load(archivo)
 
 
 def verificar_proof(proof):
+
     required = [
         "type",
         "did",
         "fingerprint",
+        "repository",
+        "commit",
         "contribution",
         "timestamp",
         "message_hash",
@@ -104,6 +104,8 @@ def verificar_proof(proof):
         "type": proof["type"],
         "did": proof["did"],
         "fingerprint": proof["fingerprint"],
+        "repository": proof["repository"],
+        "commit": proof["commit"],
         "contribution": proof["contribution"],
         "timestamp": proof["timestamp"]
     }
@@ -121,7 +123,7 @@ def verificar_proof(proof):
         return False, "El hash del mensaje no coincide"
 
     try:
-        signature = base64.urlsafe_b64decode(
+        firma = base64.urlsafe_b64decode(
             proof["signature"] + "=="
         )
     except Exception:
@@ -137,7 +139,7 @@ def verificar_proof(proof):
         )
 
         public_key.verify(
-            signature,
+            firma,
             mensaje
         )
 
@@ -162,6 +164,12 @@ if __name__ == "__main__":
         print("\nFingerprint:")
         print(proof.get("fingerprint", "N/A"))
 
+        print("\nRepository:")
+        print(proof.get("repository", "N/A"))
+
+        print("\nCommit:")
+        print(proof.get("commit", "N/A"))
+
         print("\nContribución:")
         print(proof.get("contribution", "N/A"))
 
@@ -173,6 +181,8 @@ if __name__ == "__main__":
             print("[OK]", mensaje)
             print("[OK] DID coincide")
             print("[OK] Fingerprint coincide")
+            print("[OK] Repository presente")
+            print("[OK] Commit presente")
             print("[OK] Hash coincide")
             print("[OK] Firma Ed25519 válida")
             print("\nSTATUS: VERIFIED")

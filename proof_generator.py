@@ -12,7 +12,7 @@ FINGERPRINT = "5844a5b370dba20a"
 
 REPOSITORY = "https://github.com/valendepaul2001/technocore-verificador-valen"
 
-COMMIT = "a1a0a700305a8620daa0972e7986d3ee442e3220"
+COMMIT = "c1cb98c268f795c397cec4cbe5f23f8627f16866"
 
 PRIVATE_KEY_FILE = Path(
     r"C:\Users\valen\flop-agent\private_key.pem"
