@@ -1,0 +1,9 @@
+{
+  "type": "TechnocoreContributionProof",
+  "did": "did:key:z6MkgthTNPGR6iLhgemR2vC9CvQu6idLvuBYboKVcGgEbWBQ",
+  "fingerprint": "5844a5b370dba20a",
+  "contribution": "Verificador de DID y generador de proofs firmados para Technocore",
+  "timestamp": "2026-08-27T00:58:56.734486+00:00",
+  "message_hash": "b2c8504b0f5f6514e1427d677dffec275a7d0a97a48631f862315378f504b69f",
+  "signature": "LctGwm_p93MSz_Ynxd9bIwh0gi6htS_0xgZCY_QSwHY8j2uEWOC2SMxQhFfGWUdvUyFmW9Ihnv3BtzuByM1VCg"
+}
