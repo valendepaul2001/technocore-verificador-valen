@@ -10,6 +10,10 @@ from cryptography.hazmat.primitives import serialization
 DID = "did:key:z6MkgthTNPGR6iLhgemR2vC9CvQu6idLvuBYboKVcGgEbWBQ"
 FINGERPRINT = "5844a5b370dba20a"
 
+REPOSITORY = "https://github.com/valendepaul2001/technocore-verificador-valen"
+
+COMMIT = "a1a0a700305a8620daa0972e7986d3ee442e3220"
+
 PRIVATE_KEY_FILE = Path(
     r"C:\Users\valen\flop-agent\private_key.pem"
 )
@@ -18,11 +22,6 @@ PROOF_FILE = Path("proof.json")
 
 
 def cargar_clave():
-    if not PRIVATE_KEY_FILE.exists():
-        raise FileNotFoundError(
-            f"No se encontró la clave en: {PRIVATE_KEY_FILE}"
-        )
-
     with open(PRIVATE_KEY_FILE, "rb") as archivo:
         return serialization.load_pem_private_key(
             archivo.read(),
@@ -31,12 +30,15 @@ def cargar_clave():
 
 
 def generar_proof(private_key, contribucion):
+
     timestamp = datetime.now(timezone.utc).isoformat()
 
     datos = {
         "type": "TechnocoreContributionProof",
         "did": DID,
         "fingerprint": FINGERPRINT,
+        "repository": REPOSITORY,
+        "commit": COMMIT,
         "contribution": contribucion,
         "timestamp": timestamp
     }
@@ -59,52 +61,54 @@ def generar_proof(private_key, contribucion):
     }
 
 
-if __name__ == "__main__":
+print("========================================")
+print(" TECHN0CORE - SIGNED PROOF GENERATOR")
+print("========================================")
 
-    print("========================================")
-    print(" TECHN0CORE - SIGNED PROOF GENERATOR")
-    print("========================================")
+print("\nDID:")
+print(DID)
 
-    print("\nDID:")
-    print(DID)
+print("\nFingerprint:")
+print(FINGERPRINT)
 
-    print("\nFingerprint:")
-    print(FINGERPRINT)
+print("\nRepository:")
+print(REPOSITORY)
 
-    try:
-        private_key = cargar_clave()
-    except Exception as error:
-        print("\n[ERROR]", error)
-        raise SystemExit(1)
+print("\nCommit:")
+print(COMMIT)
 
-    contribucion = input(
-        "\nDescribí tu contribución: "
-    ).strip()
+private_key = cargar_clave()
 
-    if not contribucion:
-        print("\n[ERROR] Falta describir la contribución.")
-        raise SystemExit(1)
+contribucion = input(
+    "\nDescribí tu contribución: "
+).strip()
 
-    proof = generar_proof(
-        private_key,
-        contribucion
-    )
+if not contribucion:
+    print("\n[ERROR] Falta describir la contribución.")
+    raise SystemExit(1)
 
-    PROOF_FILE.write_text(
-        json.dumps(
-            proof,
-            indent=2,
-            ensure_ascii=False
-        ),
-        encoding="utf-8"
-    )
+proof = generar_proof(
+    private_key,
+    contribucion
+)
 
-    print("\n[OK] Proof firmado con tu clave Ed25519")
-    print("----------------------------------------")
-    print("DID:", proof["did"])
-    print("Fingerprint:", proof["fingerprint"])
-    print("Hash:", proof["message_hash"])
-    print("Firma generada: SI")
-    print("----------------------------------------")
-    print("[OK] Guardado en:", PROOF_FILE)
-    print("========================================")
+PROOF_FILE.write_text(
+    json.dumps(
+        proof,
+        indent=2,
+        ensure_ascii=False
+    ),
+    encoding="utf-8"
+)
+
+print("\n[OK] Proof firmado con tu clave Ed25519")
+print("----------------------------------------")
+print("DID:", proof["did"])
+print("Fingerprint:", proof["fingerprint"])
+print("Repository:", proof["repository"])
+print("Commit:", proof["commit"])
+print("Hash:", proof["message_hash"])
+print("Firma generada: SI")
+print("----------------------------------------")
+print("[OK] Guardado en:", PROOF_FILE)
+print("========================================")

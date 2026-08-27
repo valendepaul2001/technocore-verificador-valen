@@ -2,8 +2,10 @@
   "type": "TechnocoreContributionProof",
   "did": "did:key:z6MkgthTNPGR6iLhgemR2vC9CvQu6idLvuBYboKVcGgEbWBQ",
   "fingerprint": "5844a5b370dba20a",
+  "repository": "https://github.com/valendepaul2001/technocore-verificador-valen",
+  "commit": "a1a0a700305a8620daa0972e7986d3ee442e3220",
   "contribution": "Verificador de DID y generador de proofs firmados para Technocore",
-  "timestamp": "2026-08-27T00:58:56.734486+00:00",
-  "message_hash": "b2c8504b0f5f6514e1427d677dffec275a7d0a97a48631f862315378f504b69f",
-  "signature": "LctGwm_p93MSz_Ynxd9bIwh0gi6htS_0xgZCY_QSwHY8j2uEWOC2SMxQhFfGWUdvUyFmW9Ihnv3BtzuByM1VCg"
+  "timestamp": "2026-08-27T01:40:22.158101+00:00",
+  "message_hash": "8f6a430419896c89fdaf37aebc610ed4d15d5b5b7f8dc0a30609f4f705c45563",
+  "signature": "C0qnE8uvhDdXc4y7XwnVQoHhw-SPLYwl1UwVlDKfKiI6rKmrtCkyzyy7muZA4rGOhIpkpkiKbexZ3D1SwBhqDg"
 }
