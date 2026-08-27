@@ -1,62 +1,189 @@
+import base64
 import hashlib
-import re
+import json
+from pathlib import Path
+
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 
-def validar_did(did):
-    """Comprueba que el DID tenga formato did:key."""
-    if not did:
-        return False, "DID vacío"
+PROOF_FILE = Path("proof.json")
 
-    patron = r"^did:key:z[1-9A-HJ-NP-Za-km-z]+$"
+EXPECTED_DID = (
+    "did:key:z6MkgthTNPGR6iLhgemR2vC9CvQu6idLvuBYboKVcGgEbWBQ"
+)
 
-    if re.match(patron, did):
-        return True, "Formato DID válido"
-
-    return False, "Formato DID inválido"
+EXPECTED_FINGERPRINT = "5844a5b370dba20a"
 
 
-def fingerprint_did(did):
-    """Genera un fingerprint reproducible del DID."""
-    digest = hashlib.sha256(did.encode("utf-8")).hexdigest()
-    return digest[:16]
+def base58_decode(text):
+    alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+
+    numero = 0
+
+    for caracter in text:
+        if caracter not in alphabet:
+            raise ValueError("DID contiene un carácter Base58 inválido")
+
+        numero = numero * 58 + alphabet.index(caracter)
+
+    resultado = numero.to_bytes(
+        (numero.bit_length() + 7) // 8,
+        "big"
+    )
+
+    ceros = 0
+
+    for caracter in text:
+        if caracter == "1":
+            ceros += 1
+        else:
+            break
+
+    return b"\x00" * ceros + resultado
 
 
-def verificar_perfil(did, nombre="Technocore Agent"):
-    """Verificación básica local del perfil."""
-    valido, mensaje = validar_did(did)
+def obtener_clave_publica_desde_did(did):
+    if not did.startswith("did:key:z"):
+        raise ValueError("No es un did:key Base58btc válido")
 
-    if not valido:
-        return {
-            "ok": False,
-            "mensaje": mensaje
-        }
+    encoded = did[len("did:key:z"):]
 
-    return {
-        "ok": True,
-        "mensaje": "Perfil básico válido",
-        "did": did,
-        "nombre": nombre,
-        "fingerprint": fingerprint_did(did)
+    multicodec = base58_decode(encoded)
+
+    # Ed25519 public key multicodec = 0xed01
+    if not multicodec.startswith(b"\xed\x01"):
+        raise ValueError(
+            "El DID no contiene una clave pública Ed25519"
+        )
+
+    public_key_bytes = multicodec[2:]
+
+    if len(public_key_bytes) != 32:
+        raise ValueError(
+            "La clave pública Ed25519 debe tener 32 bytes"
+        )
+
+    return public_key_bytes
+
+
+def cargar_proof():
+    if not PROOF_FILE.exists():
+        raise FileNotFoundError(
+            "No existe proof.json"
+        )
+
+    with open(PROOF_FILE, "r", encoding="utf-8") as archivo:
+        return json.load(archivo)
+
+
+def verificar_proof(proof):
+    required = [
+        "type",
+        "did",
+        "fingerprint",
+        "contribution",
+        "timestamp",
+        "message_hash",
+        "signature"
+    ]
+
+    for campo in required:
+        if campo not in proof:
+            return False, f"Falta el campo: {campo}"
+
+    if proof["type"] != "TechnocoreContributionProof":
+        return False, "Tipo de proof incorrecto"
+
+    if proof["did"] != EXPECTED_DID:
+        return False, "El DID no coincide"
+
+    if proof["fingerprint"] != EXPECTED_FINGERPRINT:
+        return False, "El fingerprint no coincide"
+
+    datos = {
+        "type": proof["type"],
+        "did": proof["did"],
+        "fingerprint": proof["fingerprint"],
+        "contribution": proof["contribution"],
+        "timestamp": proof["timestamp"]
     }
+
+    mensaje = json.dumps(
+        datos,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":")
+    ).encode("utf-8")
+
+    hash_calculado = hashlib.sha256(mensaje).hexdigest()
+
+    if hash_calculado != proof["message_hash"]:
+        return False, "El hash del mensaje no coincide"
+
+    try:
+        signature = base64.urlsafe_b64decode(
+            proof["signature"] + "=="
+        )
+    except Exception:
+        return False, "Firma Base64 inválida"
+
+    try:
+        public_key_bytes = obtener_clave_publica_desde_did(
+            proof["did"]
+        )
+
+        public_key = Ed25519PublicKey.from_public_bytes(
+            public_key_bytes
+        )
+
+        public_key.verify(
+            signature,
+            mensaje
+        )
+
+    except Exception:
+        return False, "Firma Ed25519 inválida"
+
+    return True, "Proof criptográficamente válido"
 
 
 if __name__ == "__main__":
+
     print("========================================")
-    print(" TECHN0CORE - VERIFICADOR")
+    print(" TECHN0CORE - PROOF VERIFIER")
     print("========================================")
 
-    did = input("\nPegá tu DID: ").strip()
+    try:
+        proof = cargar_proof()
 
-    resultado = verificar_perfil(did)
+        print("\nDID:")
+        print(proof.get("did", "N/A"))
 
-    print()
+        print("\nFingerprint:")
+        print(proof.get("fingerprint", "N/A"))
 
-    if resultado["ok"]:
-        print("[OK]", resultado["mensaje"])
-        print("DID:", resultado["did"])
-        print("Nombre:", resultado["nombre"])
-        print("Fingerprint:", resultado["fingerprint"])
-    else:
-        print("[ERROR]", resultado["mensaje"])
+        print("\nContribución:")
+        print(proof.get("contribution", "N/A"))
 
-    print("\n========================================")
+        valido, mensaje = verificar_proof(proof)
+
+        print("\n----------------------------------------")
+
+        if valido:
+            print("[OK]", mensaje)
+            print("[OK] DID coincide")
+            print("[OK] Fingerprint coincide")
+            print("[OK] Hash coincide")
+            print("[OK] Firma Ed25519 válida")
+            print("\nSTATUS: VERIFIED")
+        else:
+            print("[ERROR]", mensaje)
+            print("\nSTATUS: INVALID")
+
+        print("----------------------------------------")
+        print("========================================")
+
+    except Exception as error:
+        print("\n[ERROR]", error)
+        print("\nSTATUS: INVALID")
+        print("========================================")
