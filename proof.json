@@ -3,9 +3,9 @@
   "did": "did:key:z6MkgthTNPGR6iLhgemR2vC9CvQu6idLvuBYboKVcGgEbWBQ",
   "fingerprint": "5844a5b370dba20a",
   "repository": "https://github.com/valendepaul2001/technocore-verificador-valen",
-  "commit": "a1a0a700305a8620daa0972e7986d3ee442e3220",
+  "commit": "c4e5204de4e03495d8a10a4d7a048550b11058ae",
   "contribution": "Verificador de DID y generador de proofs firmados para Technocore",
-  "timestamp": "2026-08-27T01:40:22.158101+00:00",
-  "message_hash": "8f6a430419896c89fdaf37aebc610ed4d15d5b5b7f8dc0a30609f4f705c45563",
-  "signature": "C0qnE8uvhDdXc4y7XwnVQoHhw-SPLYwl1UwVlDKfKiI6rKmrtCkyzyy7muZA4rGOhIpkpkiKbexZ3D1SwBhqDg"
+  "timestamp": "2026-08-27T02:00:34.615990+00:00",
+  "message_hash": "d72db506921f0da14dcccc302bbf24fceee40030d761d0f8a3f37169a239491f",
+  "signature": "J1YZX4KGZNtK5Xw6rsIbTMcOUFUr5Tr0D3e_6X5GMR-hyR7kqWAto2f3W5D_X_MB4BRtXxVrC9Q4nxxRAExnCA"
 }
